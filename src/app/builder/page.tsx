@@ -1,4 +1,6 @@
 'use client'
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -64,6 +66,14 @@ export default function BuilderPage() {
   }, [items]);
   return (
 <div className="p-4 mx-[15%]">
+      <div className="mb-8 mr-[70%] flex">
+        <Input className="mr-4" placeholder="pobb.in link">
+        </Input>
+        <Button>
+          Add
+        </Button>
+      </div>
+
       <Table className="w-full">
         <TableCaption>Path of Exile Item Tracker</TableCaption>
         <TableHeader>
