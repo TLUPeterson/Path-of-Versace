@@ -35,18 +35,7 @@ export default function RootLayout({
               </div>
               <div className="flex-1 overflow-auto py-2">
                 <nav className="grid items-start px-4 text-sm font-medium">
-                  <NavItem href="/">
-                    <UsersIcon className="h-4 w-4" />
-                    Home
-                  </NavItem>
-                  <NavItem href="/builder">
-                    <SettingsIcon className="h-4 w-4" />
-                    Builder
-                  </NavItem>
-                  <NavItem href="https://vercel.com/templates/next.js/admin-dashboard-tailwind-postgres-react-nextjs">
-                    <VercelLogo className="h-4 w-4" />
-                    Deploy
-                  </NavItem>
+
                 </nav>
               </div>
             </div>
@@ -60,6 +49,15 @@ export default function RootLayout({
                 <Logo />
                 <span className="">ACME</span>
               </Link>
+              
+              <NavItem href="/">
+                <UsersIcon className="h-4 w-4" />
+                  Home
+              </NavItem>
+              <NavItem href="/builder">
+                <SettingsIcon className="h-4 w-4" />
+                  Builder
+              </NavItem>
             </header>
             {children}
           </div>

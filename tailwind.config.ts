@@ -19,6 +19,10 @@ const config = {
     },
     extend: {
       colors: {
+        "gold": "#ffd700",//#FFD500
+        "cred": "#ED254E",
+        "dark": "#011936E",
+        "customwhite": "#F0F0F0",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
