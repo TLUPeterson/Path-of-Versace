@@ -1,15 +1,14 @@
 import './globals.css';
 
-
 import Link from 'next/link';
 import { Logo, SettingsIcon, UsersIcon, VercelLogo } from '@/components/icons';
 import { NavItem } from './nav-item';
 
 
 export const metadata = {
-  title: 'Next.js App Router + NextAuth + Tailwind CSS',
+  title: 'Pobb pricer',
   description:
-    'A user admin dashboard configured with Next.js, Postgres, NextAuth, Tailwind CSS, TypeScript, and Prettier.'
+    'Get an estimate price of Pobb items.'
 };
 
 

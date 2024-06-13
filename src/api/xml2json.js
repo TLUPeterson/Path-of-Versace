@@ -27,7 +27,7 @@ function parseXml(xml) {
     return dom;
   }
   
-  function xml2json(xml, tab) {
+export default function xml2json(xml, tab) {
      var X = {
         toObj: function(xml) {
            var o = {};
