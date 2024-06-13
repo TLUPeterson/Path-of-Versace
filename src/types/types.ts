@@ -2,6 +2,7 @@
 export interface Gear {
     tooltip: string;
     ratio: string;
+    itemId?: string;
 }
 
 // types/item.d.ts
@@ -34,8 +35,25 @@ export interface ParsedItems {
 }
 
 export interface Gears {
-    [key: string]: Gear;
-}
+    [key: string]: Gear; 
+    Weapon1: Gear;
+    Weapon1Swap: Gear;
+    Weapon2: Gear;
+    Weapon2Swap: Gear;
+    Helmet: Gear;
+    Gloves: Gear;
+    Boots: Gear;
+    BodyArmour: Gear;
+    Belt: Gear;
+    Ring1: Gear;
+    Ring2: Gear;
+    Amulet: Gear;
+    Flask1: Gear;
+    Flask2: Gear;
+    Flask3: Gear;
+    Flask4: Gear;
+    Flask5: Gear;
+  }
 
 export interface SkillSet {
     '@id': string;
@@ -46,7 +64,7 @@ export interface Skills {
 }
 
 export interface PathOfBuilding {
-    Gears: { Weapon1: { tooltip: string; ratio: string; }; Weapon1Swap: { tooltip: string; ratio: string; }; Weapon2: { tooltip: string; ratio: string; }; Weapon2Swap: { tooltip: string; ratio: string; }; Helmet: { tooltip: string; ratio: string; }; Gloves: { tooltip: string; ratio: string; }; Boots: { tooltip: string; ratio: string; }; BodyArmour: { tooltip: string; ratio: string; }; Belt: { tooltip: string; ratio: string; }; Ring1: { tooltip: string; ratio: string; }; Ring2: { tooltip: string; ratio: string; }; Amulet: { tooltip: string; ratio: string; }; Flask1: { tooltip: string; ratio: string; }; Flask2: { tooltip: string; ratio: string; }; Flask3: { tooltip: string; ratio: string; }; Flask4: { tooltip: string; ratio: string; }; Flask5: { tooltip: string; ratio: string; }; };
+    Gears: Gears;
     Config: any;
     TreeView: any;
     Calcs: any;
@@ -63,3 +81,13 @@ export interface PathOfBuilding {
 export interface Pob {
     PathOfBuilding: PathOfBuilding;
 }
+
+export interface Slot {
+    '@itemId': string;
+    '@name': string;
+    '@itemPbURL': string;
+  }
+  
+  export interface ItemSet {
+    Slot: Slot[];
+  }

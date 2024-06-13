@@ -3,7 +3,7 @@ import pako from "pako";
 import xml2json from "./xml2json";
 
 
-import { Gears, PathOfBuilding } from "@/types/types";
+import { Gears, PathOfBuilding, Slot } from "@/types/types";
 
 
 function basename(path: string): string | undefined {
@@ -44,8 +44,11 @@ function refine(pob: PathOfBuilding): void {
   delete pob.TreeView
   delete pob.Config
   pob.Gears = initItems();
+  console.log(pob.Gears)
   //console.log(typeof pob.Gears, pob.Gears)
   refineItemSet(pob)
+  console.log(pob.Gears)
+  refineItems(pob)
   console.log(pob.Gears)
   //refineItems(pob)
 }
@@ -59,23 +62,26 @@ function refineSkills(pob: PathOfBuilding): void {
 
 function refineItemSet(pob: PathOfBuilding): void {
   let itemSets = pob.Items.ItemSet[0].Slot;
-  itemSets.forEach((itemSet: object) => {
+  itemSets.forEach((itemSet: Slot) => {
 
-  //console.log(itemSet);
-  if (itemSet['@itemId'] == '0') {
-    return;
-  }
-  console.log("new", itemSet)
-  pob.Gears.itemSet['itemid'] = itemSet['@itemId'];
+    if (itemSet['@itemId'] === '0') {
+      return;
+    }
+    const currrentItem = itemSet['@name'].replace(/\s+/g, '');
+    pob.Gears[currrentItem].itemId = itemSet['@itemId'];
   });
 }
 
 function refineItems(pob: PathOfBuilding): void {
   let items = pob.Items.Item;
-  console.log(pob.Items)
-  items.forEach((item) => {
-    item['#text']
-    console.log(item);
+  let gears = pob.Gears;
+  //console.log(pob.Items)
+  Object.entries(gears).forEach(([key, item]) => {
+    //item['#text']
+    //item['@id']
+    //console.log(item.itemId);
+    item.tooltip = items.find((i) => i['@id'] === item.itemId)?.['#text'];
+
   })
 }
 
