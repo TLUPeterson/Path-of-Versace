@@ -665,20 +665,7 @@ var GEM_COLORS = {
 
   function refineSkills(pob)
   {
-    const icons = {
-      'Gloves': 'Art/2DArt/UIImages/InGame/CraftingWindow/Icons/Gloves.webp',
-      'Boots': 'Art/2DArt/UIImages/InGame/CraftingWindow/Icons/Boots.webp',
-      'Helmet': 'Art/2DArt/UIImages/InGame/CraftingWindow/Icons/Helmet.webp',
-      'Belt': 'Art/2DArt/UIImages/InGame/CraftingWindow/Icons/Belt.webp',
-      'Ring 1': 'Art/2DArt/UIImages/InGame/CraftingWindow/Icons/Ring.webp',
-      'Ring 2': 'Art/2DArt/UIImages/InGame/CraftingWindow/Icons/Ring.webp',
-      'Amulet': 'Art/2DArt/UIImages/InGame/CraftingWindow/Icons/Amulet.webp',
-      'Quiver': 'Art/2DArt/UIImages/InGame/CraftingWindow/Icons/Quiver.webp',
-      'Shield': 'Art/2DArt/UIImages/InGame/CraftingWindow/Icons/Shield.webp',
-      'Body Armour': 'Art/2DArt/UIImages/InGame/CraftingWindow/Icons/Armour.webp',
-      'Weapon 1': 'Art/2DArt/UIImages/InGame/CraftingWindow/Icons/1HandedMelee.webp',
-      'Weapon 2': 'Art/2DArt/UIImages/InGame/CraftingWindow/Icons/Shield.webp',
-    };
+
     if (pob.Skills.SkillSet['@id']) {
       pob.Skills.SkillSet = [pob.Skills.SkillSet];
     }

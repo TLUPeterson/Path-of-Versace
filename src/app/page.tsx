@@ -1,22 +1,20 @@
 'use client'
 import { useEffect, useState } from 'react';
 import pobInit from '../api/pobparse';
-
-interface Pob {
-  PathOfBuilding: JSON;
-}
+import { PathOfBuilding } from '@/types/types';
 
 
 export default function Home() {
-  const [data, setData] = useState<Pob | null>(null);
+  const [data, setData] = useState<PathOfBuilding  | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       console.log("Fetching data");
-      const result = await pobInit();
+      let result = await pobInit();
       if (result === null) {
         console.log("NA");
       } else {
+        result = result
         setData(result);
       }
     };
@@ -27,7 +25,7 @@ export default function Home() {
   return (
     <main className="flex flex-1 flex-col p-4 md:p-6">
       <div className="flex items-center mb-8">
-        {data ? <pre>{JSON.stringify(data, null, 2)}</pre> : 'Loading...'}
+        {/* {data ? <pre>{JSON.stringify(data, null, 2)}</pre> : 'Loading...'} */}
       </div>
     </main>
   );
