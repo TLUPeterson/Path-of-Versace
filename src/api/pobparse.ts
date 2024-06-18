@@ -3,7 +3,7 @@ import pako from "pako";
 import xml2json from "./xml2json";
 
 
-import { Gears, PathOfBuilding, Slot } from "@/types/types";
+import { Gears, Item, PathOfBuilding, Slot } from "@/types/types";
 
 
 function basename(path: string): string | undefined {
@@ -44,10 +44,8 @@ function refine(pob: PathOfBuilding): void {
   delete pob.TreeView
   delete pob.Config
   pob.Gears = initItems();
-  console.log(pob.Gears)
   //console.log(typeof pob.Gears, pob.Gears)
   refineItemSet(pob)
-  console.log(pob.Gears)
   refineItems(pob)
   console.log(pob.Gears)
   //refineItems(pob)
@@ -80,10 +78,164 @@ function refineItems(pob: PathOfBuilding): void {
     //item['#text']
     //item['@id']
     //console.log(item.itemId);
-    item.tooltip = items.find((i) => i['@id'] === item.itemId)?.['#text'];
+    const tooltipText = items.find((i) => i['@id'] === item.itemId)?.['#text'];
+    console.log(tooltipText);
+    //item.tooltip = 
 
   })
 }
+
+function parseTooltip(text: string): Item {
+  text = text.trim();
+  const lines = text.split(/\r?\n/);
+  const item: Item = {
+    stats: [],
+    stats2: {},
+    implicits: [],
+    explicits: [],
+  };
+
+  let line = lines.shift();
+  if (!line) return item;
+
+  const rarity = line.split(': ');
+  item[rarity[0] as keyof Item] = rarity[1];
+  item.bg_color = 'bg_' + item.Rarity;
+
+  switch (item.Rarity) {
+    case 'NORMAL':
+    case 'MAGIC':
+      item.baseType = item.typeLine = lines.shift() || '';
+      break;
+    case 'RARE':
+    case 'UNIQUE':
+    case 'RELIC':
+      item.name = lines.shift() || '';
+      item.baseType = item.typeLine = lines.shift() || '';
+      item.line = 'doubleLine';
+      break;
+  }
+  const itemInfo = searchItemInfo(item);
+  if (itemInfo) {
+    // Ignoring item icons as requested
+    if (itemInfo.isFlask) {
+      item.isFlask = itemInfo.isFlask;
+    }
+  }
+  let implicits: number | undefined;
+  const skipAttrs = new Set([
+    'Unique ID',
+    'League',
+    'Item Level',
+    'ArmourBasePercentile',
+    'EvasionBasePercentile',
+    'EnergyShieldBasePercentile',
+    'Variant',
+    'Selected Variant',
+    'Has Alt Variant',
+    'Selected Alt Variant',
+    'Crafted',
+    'Prefix',
+    'Suffix',
+    'Cluster Jewel Skill',
+    'Cluster Jewel Node Count',
+  ]);
+  while (lines.length) {
+    line = lines.shift()!;
+    const stat = line.split(': ', 2);
+    if (stat.length === 2) {
+      if (item.stats2[stat[0]]) {
+        // If stat already exists, merge the new stat
+      } else {
+        item.stats2[stat[0]] = stat[1];
+      }
+    }
+    if (skipAttrs.has(stat[0])) {
+      continue;
+    }
+    if (stat[0] === 'Quality' && stat[1] === '0') {
+      continue;
+    }
+    if (stat[0] !== 'Implicits') {
+      item.stats.push(line);
+      continue;
+    }
+    implicits = parseInt(stat[1], 10);
+    break;
+  }
+
+  for (let i = 0; i < (implicits || 0); i++) {
+    line = lines.shift()!;
+    line = modifierPretty(line, item);
+    if (line) {
+      item.implicits.push(line);
+    }
+  }
+
+  lines.forEach((line) => {
+    line = modifierPretty(line, item);
+    if (line) {
+      item.explicits.push(line);
+    }
+  });
+
+  return item;
+}
+
+function searchItemInfo(item)
+{
+  switch(item.Rarity) {
+    case 'NORMAL':
+      return ITEMS[item.typeLine];
+    case 'MAGIC':
+      let found;
+      $.each(ITEMS, function(itemName, itemInfo) {
+        if (item.typeLine.indexOf(itemName) != -1) {
+          found = itemInfo;
+          return false; // =break;
+        }
+      });
+      return found;
+    case 'RARE':
+      return ITEMS[item.typeLine];
+    case 'UNIQUE':
+    case 'RELIC':
+      return ITEMS[item.name];
+  }
+}
+
+function modifierPretty(line, item)
+  {
+    let stat = {line: line, style: ''};
+    // remove {tags:}
+    stat.line = stat.line.replace(/\{tags:.+?\}/, '');
+    stat.line = stat.line.replace(/\{range:.+?\}/, '');
+    //
+    let match;
+    if (match = line.match(/\{variant:(.+?)\}/)) {
+      let variant = match[1].split(',');
+      if (!isSelectedVariant(variant, item)) {
+        return;
+      }
+    }
+    stat.line = stat.line.replace(/\{variant:.+?\}/, '');
+    // keep larger value
+    stat.line = stat.line.replace(/\(\d+\-(\d+)\)/g, "$1");
+    stat.line = stat.line.replace(/\(\-?\d+\-(\d+)\)/g, "$1");
+    //
+    if (line.indexOf('{crafted}') != -1) {
+      stat.line = stat.line.replace('{crafted}', '');
+      stat.style = 'crafted';
+    }
+    if (line.indexOf('{fractured}') != -1) {
+      stat.line = stat.line.replace('{fractured}', '');
+      stat.style = 'fractured';
+    }
+    if (line == 'Corrupted') {
+      stat.style = 'corrupted';
+    }
+    return stat;
+  }
 
 function decodeRaw(raw: string): string {
   raw = raw.replaceAll('-', '+').replaceAll('_', '/');
