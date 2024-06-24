@@ -1,7 +1,6 @@
 
 export interface Gear {
     tooltip: string;
-    ratio: string;
     itemId?: string;
 }
 
@@ -30,6 +29,17 @@ export interface Items {
     forEach(arg0: (item: any) => void): unknown;
     Item: Item[];
 }
+
+export interface ItemInfo {
+    icon?: string;
+    isFlask?: boolean;
+  }
+  
+export interface Stat {
+    line: string;
+    style: string;
+  }
+
 
 export interface ParsedItems {
     [key: string]: Item;

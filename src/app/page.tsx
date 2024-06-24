@@ -1,31 +1,57 @@
 'use client'
 import { useEffect, useState } from 'react';
 import pobInit from '../api/pobparse';
-import { PathOfBuilding } from '@/types/types';
+import { PathOfBuilding, Item } from '@/types/types';
 
 
 export default function Home() {
-  const [data, setData] = useState<PathOfBuilding  | null>(null);
+  const [items, setItems] = useState<PathOfBuilding | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       console.log("Fetching data");
       let result = await pobInit();
+      console.log(result);
       if (result === null) {
         console.log("NA");
       } else {
-        result = result
-        setData(result);
+        setItems(result);
       }
     };
 
     fetchData();
   }, []);
   
+  if (!items || !items.ParsedItems) return <div>Loading...</div>;
+
+  
   return (
     <main className="flex flex-1 flex-col p-4 md:p-6">
-      <div className="flex items-center mb-8">
-        {/* {data ? <pre>{JSON.stringify(data, null, 2)}</pre> : 'Loading...'} */}
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white dark:bg-gray-800">
+          <thead>
+            <tr>
+              <th className="px-4 py-2">ID</th>
+              <th className="px-4 py-2">Rarity</th>
+              <th className="px-4 py-2">Name</th>
+              <th className="px-4 py-2">Base Type</th>
+              <th className="px-4 py-2">Type Line</th>
+              <th className="px-4 py-2">#text</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(items.ParsedItems).map(([id, item]: [string, Item]) => (
+              <tr key={id} className="border-t dark:border-gray-700">
+                <td className="px-4 py-2">{item['@id']}</td>
+                <td className="px-4 py-2">{item.Rarity}</td>
+                <td className="px-4 py-2">{item.name}</td>
+                <td className="px-4 py-2">{item.baseType}</td>
+                <td className="px-4 py-2">{item.typeLine}</td>
+                <td className="px-4 py-2">{item['#text']}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </main>
   );

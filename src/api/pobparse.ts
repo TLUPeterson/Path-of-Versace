@@ -3,32 +3,32 @@ import pako from "pako";
 import xml2json from "./xml2json";
 
 
-import { Gears, Item, PathOfBuilding, Slot } from "@/types/types";
-
+import { Gears, Item, ItemInfo, PathOfBuilding, Slot, Stat } from "@/types/types";
 
 function basename(path: string): string | undefined {
   return path.split(/[\\/]/).pop();
 }
+
 function initItems()
 {
   return {
-    Weapon1: {'tooltip': 'Empty', 'ratio': '2/4'},
-    Weapon1Swap: {'tooltip': 'Empty', 'ratio': '1/2'},
-    Weapon2: {'tooltip': 'Empty', 'ratio': '2/4'},
-    Weapon2Swap: {'tooltip': 'Empty', 'ratio': '1/2'},
-    Helmet: {'tooltip': 'Empty', 'ratio': '2/2'},
-    Gloves: {'tooltip': 'Empty', 'ratio': '2/2'},
-    Boots: {'tooltip': 'Empty', 'ratio': '2/2'},
-    BodyArmour: {'tooltip': 'Empty', 'ratio': '2/3'},
-    Belt: {'tooltip': 'Empty', 'ratio': '2/1'},
-    Ring1: {'tooltip': 'Empty', 'ratio': '1/1'},
-    Ring2: {'tooltip': 'Empty', 'ratio': '1/1'},
-    Amulet: {'tooltip': 'Empty', 'ratio': '1/1'},
-    Flask1: {'tooltip': 'Empty', 'ratio': '1/2'},
-    Flask2: {'tooltip': 'Empty', 'ratio': '1/2'},
-    Flask3: {'tooltip': 'Empty', 'ratio': '1/2'},
-    Flask4: {'tooltip': 'Empty', 'ratio': '1/2'},
-    Flask5: {'tooltip': 'Empty', 'ratio': '1/2'},
+    Weapon1: {'tooltip': 'Empty'},
+    Weapon1Swap: {'tooltip': 'Empty'},
+    Weapon2: {'tooltip': 'Empty'},
+    Weapon2Swap: {'tooltip': 'Empty'},
+    Helmet: {'tooltip': 'Empty'},
+    Gloves: {'tooltip': 'Empty'},
+    Boots: {'tooltip': 'Empty'},
+    BodyArmour: {'tooltip': 'Empty'},
+    Belt: {'tooltip': 'Empty'},
+    Ring1: {'tooltip': 'Empty'},
+    Ring2: {'tooltip': 'Empty'},
+    Amulet: {'tooltip': 'Empty'},
+    Flask1: {'tooltip': 'Empty'},
+    Flask2: {'tooltip': 'Empty'},
+    Flask3: {'tooltip': 'Empty'},
+    Flask4: {'tooltip': 'Empty'},
+    Flask5: {'tooltip': 'Empty'},
   };
 }
 
@@ -44,11 +44,8 @@ function refine(pob: PathOfBuilding): void {
   delete pob.TreeView
   delete pob.Config
   pob.Gears = initItems();
-  //console.log(typeof pob.Gears, pob.Gears)
   refineItemSet(pob)
   refineItems(pob)
-  console.log(pob.Gears)
-  //refineItems(pob)
 }
 
 function refineSkills(pob: PathOfBuilding): void {
@@ -71,19 +68,23 @@ function refineItemSet(pob: PathOfBuilding): void {
 }
 
 function refineItems(pob: PathOfBuilding): void {
-  let items = pob.Items.Item;
-  let gears = pob.Gears;
-  //console.log(pob.Items)
-  Object.entries(gears).forEach(([key, item]) => {
-    //item['#text']
-    //item['@id']
-    //console.log(item.itemId);
-    const tooltipText = items.find((i) => i['@id'] === item.itemId)?.['#text'];
-    console.log(tooltipText);
-    //item.tooltip = 
+  let items: Item[] = pob.Items.Item;
 
-  })
+  // Refine individual items
+  let itemids: { [key: string]: Item } = {};
+  items.forEach((val) => {
+    if (val['#text']) {
+      let tooltip = parseTooltip(val['#text']);
+      Object.assign(val, tooltip);
+    }
+    if (val['@id']) {
+      itemids[val['@id']] = val;
+    }
+  });
+  pob.ParsedItems = itemids;
 }
+
+
 
 function parseTooltip(text: string): Item {
   text = text.trim();
@@ -99,7 +100,10 @@ function parseTooltip(text: string): Item {
   if (!line) return item;
 
   const rarity = line.split(': ');
-  item[rarity[0] as keyof Item] = rarity[1];
+  const key = rarity[0] as keyof Item;
+  if (rarity.length === 2 && key) {
+    item[key] = rarity[1] as any; // Ensure type compatibility
+  }
   item.bg_color = 'bg_' + item.Rarity;
 
   switch (item.Rarity) {
@@ -115,13 +119,14 @@ function parseTooltip(text: string): Item {
       item.line = 'doubleLine';
       break;
   }
-  const itemInfo = searchItemInfo(item);
+  /*const itemInfo = searchItemInfo(item);
   if (itemInfo) {
     // Ignoring item icons as requested
     if (itemInfo.isFlask) {
       item.isFlask = itemInfo.isFlask;
     }
-  }
+  }*/
+
   let implicits: number | undefined;
   const skipAttrs = new Set([
     'Unique ID',
@@ -140,12 +145,13 @@ function parseTooltip(text: string): Item {
     'Cluster Jewel Skill',
     'Cluster Jewel Node Count',
   ]);
+
   while (lines.length) {
     line = lines.shift()!;
     const stat = line.split(': ', 2);
     if (stat.length === 2) {
       if (item.stats2[stat[0]]) {
-        // If stat already exists, merge the new stat
+        // If stat already exists, merge the new stat (if necessary)
       } else {
         item.stats2[stat[0]] = stat[1];
       }
@@ -166,76 +172,97 @@ function parseTooltip(text: string): Item {
 
   for (let i = 0; i < (implicits || 0); i++) {
     line = lines.shift()!;
-    line = modifierPretty(line, item);
-    if (line) {
-      item.implicits.push(line);
+    const prettyLine = modifierPretty(line, item);
+    if (prettyLine) {
+      item.implicits.push(prettyLine.line); // Ensure type compatibility
     }
   }
 
   lines.forEach((line) => {
-    line = modifierPretty(line, item);
-    if (line) {
-      item.explicits.push(line);
+    const prettyLine = modifierPretty(line, item);
+    if (prettyLine) {
+      item.explicits.push(prettyLine.line); // Ensure type compatibility
     }
   });
 
   return item;
 }
 
-function searchItemInfo(item)
-{
-  switch(item.Rarity) {
+
+
+function searchItemInfo(item: Item): ItemInfo | undefined {
+  switch (item.Rarity) {
     case 'NORMAL':
-      return ITEMS[item.typeLine];
+      return ITEMS[item.typeLine!];
     case 'MAGIC':
-      let found;
-      $.each(ITEMS, function(itemName, itemInfo) {
-        if (item.typeLine.indexOf(itemName) != -1) {
+      let found: ItemInfo | undefined;
+      Object.entries(ITEMS).forEach(([itemName, itemInfo]) => {
+        if (item.typeLine?.includes(itemName)) {
           found = itemInfo;
           return false; // =break;
         }
       });
       return found;
     case 'RARE':
-      return ITEMS[item.typeLine];
+      return ITEMS[item.typeLine!];
     case 'UNIQUE':
     case 'RELIC':
-      return ITEMS[item.name];
+      return ITEMS[item.name!];
+    default:
+      return undefined;
   }
 }
 
-function modifierPretty(line, item)
-  {
-    let stat = {line: line, style: ''};
-    // remove {tags:}
-    stat.line = stat.line.replace(/\{tags:.+?\}/, '');
-    stat.line = stat.line.replace(/\{range:.+?\}/, '');
-    //
-    let match;
-    if (match = line.match(/\{variant:(.+?)\}/)) {
-      let variant = match[1].split(',');
-      if (!isSelectedVariant(variant, item)) {
-        return;
-      }
-    }
-    stat.line = stat.line.replace(/\{variant:.+?\}/, '');
-    // keep larger value
-    stat.line = stat.line.replace(/\(\d+\-(\d+)\)/g, "$1");
-    stat.line = stat.line.replace(/\(\-?\d+\-(\d+)\)/g, "$1");
-    //
-    if (line.indexOf('{crafted}') != -1) {
-      stat.line = stat.line.replace('{crafted}', '');
-      stat.style = 'crafted';
-    }
-    if (line.indexOf('{fractured}') != -1) {
-      stat.line = stat.line.replace('{fractured}', '');
-      stat.style = 'fractured';
-    }
-    if (line == 'Corrupted') {
-      stat.style = 'corrupted';
-    }
-    return stat;
+
+function isSelectedVariant(variant: string[], item: Item): boolean {
+  if (
+    item.stats2['Selected Variant'] &&
+    variant.includes(item.stats2['Selected Variant'])
+  ) {
+    return true;
   }
+  if (
+    item.stats2['Selected Alt Variant'] &&
+    variant.includes(item.stats2['Selected Alt Variant'])
+  ) {
+    return true;
+  }
+  return false;
+}
+
+
+function modifierPretty(line: string, item: Item): Stat | undefined {
+  let stat: Stat = { line: line, style: '' };
+  // remove {tags:}
+  stat.line = stat.line.replace(/\{tags:.+?\}/, '');
+  stat.line = stat.line.replace(/\{range:.+?\}/, '');
+
+  let match: RegExpMatchArray | null;
+  if ((match = line.match(/\{variant:(.+?)\}/))) {
+    let variant = match[1].split(',');
+    if (!isSelectedVariant(variant, item)) {
+      return undefined;
+    }
+  }
+  stat.line = stat.line.replace(/\{variant:.+?\}/, '');
+  // keep larger value
+  stat.line = stat.line.replace(/\(\d+\-(\d+)\)/g, '$1');
+  stat.line = stat.line.replace(/\(\-?\d+\-(\d+)\)/g, '$1');
+
+  if (line.indexOf('{crafted}') !== -1) {
+    stat.line = stat.line.replace('{crafted}', '');
+    stat.style = 'crafted';
+  }
+  if (line.indexOf('{fractured}') !== -1) {
+    stat.line = stat.line.replace('{fractured}', '');
+    stat.style = 'fractured';
+  }
+  if (line === 'Corrupted') {
+    stat.style = 'corrupted';
+  }
+  return stat;
+}
+
 
 function decodeRaw(raw: string): string {
   raw = raw.replaceAll('-', '+').replaceAll('_', '/');
@@ -255,7 +282,6 @@ function pobParse(raw: string): PathOfBuilding  {
   const json = JSON.parse(jsonRaw);
   const pob = json.PathOfBuilding;
   refine(pob)
-  //console.log(pob);
   return pob;
 }
 
