@@ -28,6 +28,33 @@ app.get('/pobdata', async (req, res) => {
   }
 });
 
+app.get('/pricing', async (req, res) => {
+  const itemType = 'UniqueWeapon'
+  const league = 'Necropolis'
+  const itemName = 'Kingmaker'
+  console.log(itemName)
+  
+  try {
+    const url = `https://poe.ninja/api/data/itemoverview?league=${league}&type=${itemType}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error('Network response was not ok ' + response.statusText);
+    }
+    const data = await response.json();
+
+    // Filter data for the specific itemName
+    const itemData = data.lines.find(item => item.name === itemName);
+
+    if (!itemData) {
+      return res.status(404).send('Item not found');
+    }
+
+    res.json(itemData);
+  } catch (error) {
+    res.status(500).send(error.toString());
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Proxy server running on http://localhost:${PORT}`);
 });
