@@ -6,9 +6,10 @@
 
 // Pricing unique items through poeninja
 
-
-export async function priceUnique(itemType: string, league: string, itemName: string){
-    const url = `https://poe.ninja/api/data/itemoverview?league=${league}&type=${itemType}`;
-    const data = await fetch(url)
-    console.log(data);
-}
+export const fetchItemPrice = async (itemType: string, league: string) => {
+    const response = await fetch(`http://localhost:3001/pricing?itemType=${itemType}&league=${league}`);
+    if (!response.ok) {
+      throw new Error('Network response was not ok ' + response.statusText);
+    }
+    return response.json();
+  };

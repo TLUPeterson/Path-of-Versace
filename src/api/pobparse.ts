@@ -188,32 +188,6 @@ function parseTooltip(text: string): Item {
   return item;
 }
 
-
-
-function searchItemInfo(item: Item): ItemInfo | undefined {
-  switch (item.Rarity) {
-    case 'NORMAL':
-      return ITEMS[item.typeLine!];
-    case 'MAGIC':
-      let found: ItemInfo | undefined;
-      Object.entries(ITEMS).forEach(([itemName, itemInfo]) => {
-        if (item.typeLine?.includes(itemName)) {
-          found = itemInfo;
-          return false; // =break;
-        }
-      });
-      return found;
-    case 'RARE':
-      return ITEMS[item.typeLine!];
-    case 'UNIQUE':
-    case 'RELIC':
-      return ITEMS[item.name!];
-    default:
-      return undefined;
-  }
-}
-
-
 function isSelectedVariant(variant: string[], item: Item): boolean {
   if (
     item.stats2['Selected Variant'] &&
@@ -281,6 +255,7 @@ function pobParse(raw: string): PathOfBuilding  {
   const jsonRaw = xml2json(xml, '');
   const json = JSON.parse(jsonRaw);
   const pob = json.PathOfBuilding;
+  console.log(pob);
   refine(pob)
   return pob;
 }
