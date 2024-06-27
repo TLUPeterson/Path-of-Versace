@@ -8,5 +8,7 @@ Get items from pobb
         (have to keep in mind corruptions)
         
       If rare -> 
+        Initally with all affixes?
+        //OR dont price rares, until user chooses the important affixes
 
       Gems -> poeninja

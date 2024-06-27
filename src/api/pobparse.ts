@@ -102,7 +102,20 @@ function parseTooltip(text: string): Item {
   const rarity = line.split(': ');
   const key = rarity[0] as keyof Item;
   if (rarity.length === 2 && key) {
-    item[key] = rarity[1] as any; // Ensure type compatibility
+    // Ensure type compatibility
+    switch (key) {
+      case 'stats':
+      case 'implicits':
+      case 'explicits':
+        item[key] = rarity[1].split(',') as any;
+        break;
+      case 'stats2':
+        // Assuming stats2 is an object and rarity[1] is a JSON string
+        item[key] = JSON.parse(rarity[1]) as any;
+        break;
+      default:
+        item[key] = rarity[1] as any;
+    }
   }
   item.bg_color = 'bg_' + item.Rarity;
 

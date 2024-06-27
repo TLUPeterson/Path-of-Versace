@@ -4,6 +4,7 @@ import Image from 'next/image'
 import pobInit from '../api/pobparse';
 import { PathOfBuilding, Item } from '@/types/types';
 import { fetchItemPrice } from '@/api/pricing';
+import { Checkbox } from '@/components/ui/checkbox';
 
 
 export default function Home() {
@@ -11,6 +12,12 @@ export default function Home() {
   const [tradeData, setTradeData] = useState<any | null>(null);
   const [categoryData, setCategoryData] = useState<{ [key: string]: any }>({});
   const [itemPrices, setItemPrices] = useState<{ [key: string]: any }>({});
+  const [selectedExplicits, setSelectedExplicits] = useState<{ [key: string]: { [key: string]: boolean } }>({});
+  const [selectedImplicits, setSelectedImplicits] = useState<{ [key: string]: { [key: string]: boolean } }>({});
+
+  useEffect(() => {
+    console.log(selectedImplicits);
+  }, [selectedImplicits]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -74,6 +81,7 @@ export default function Home() {
 
     await Promise.all(
       Object.entries(items.ParsedItems).map(async ([id, item]: [string, Item]) => {
+        //console.log(item, item.explicits, typeof item.explicits);
         if (item.Rarity === 'UNIQUE') {
           let category = null;
 
@@ -116,6 +124,50 @@ export default function Home() {
   };
 
   useEffect(() => {
+    // Initialize selectedExplicits and selectedImplicits with all true values
+    if (items && items.ParsedItems) {
+      const initialSelectedExplicits: { [key: string]: { [key: string]: boolean } } = {};
+      const initialSelectedImplicits: { [key: string]: { [key: string]: boolean } } = {};
+      Object.entries(items.ParsedItems).forEach(([id, item]: [string, Item]) => {
+        if (item.explicits) {
+          initialSelectedExplicits[id] = {};
+          Object.keys(item.explicits).forEach((key) => {
+            initialSelectedExplicits[id][key] = true;
+          });
+        }
+        if (item.implicits) {
+          initialSelectedImplicits[id] = {};
+          Object.keys(item.implicits).forEach((key) => {
+            initialSelectedImplicits[id][key] = true;
+          });
+        }
+      });
+      setSelectedExplicits(initialSelectedExplicits);
+      setSelectedImplicits(initialSelectedImplicits);
+    }
+  }, [items]);
+
+  const handleExplicitCheckboxChange = (itemId: string, explicitKey: string) => {
+    setSelectedExplicits((prevSelected) => ({
+      ...prevSelected,
+      [itemId]: {
+        ...prevSelected[itemId],
+        [explicitKey]: !prevSelected[itemId]?.[explicitKey]
+      }
+    }));
+  };
+
+  const handleImplicitCheckboxChange = (itemId: string, implicitKey: string) => {
+    setSelectedImplicits((prevSelected) => ({
+      ...prevSelected,
+      [itemId]: {
+        ...prevSelected[itemId],
+        [implicitKey]: !prevSelected[itemId]?.[implicitKey]
+      }
+    }));
+  };
+
+  useEffect(() => {
     fetchCategoryData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -135,8 +187,8 @@ export default function Home() {
               <th className="px-4 py-2">Rarity</th>
               <th className="px-4 py-2">Name</th>
               <th className="px-4 py-2">Type Line</th>
-              <th className="px-4 py-2">Ex</th>
               <th className="px-4 py-2">Imp</th>
+              <th className="px-4 py-2">Ex</th>
               <th className="px-4 py-2">Price (Chaos)</th>
             </tr>
           </thead>
@@ -149,8 +201,30 @@ export default function Home() {
                 <td className="px-4 py-2">{item.Rarity}</td>
                 <td className="px-4 py-2">{item.name}</td>
                 <td className="px-4 py-2">{item.typeLine}</td>
-                <td className="px-4 py-2">{item.explicits}</td>
-                <td className="px-4 py-2">{item.implicits}</td>
+                <td className="px-4 py-2">
+                {item.implicits && Object.entries(item.implicits).map(([key, implicit]) => (
+                  <div id='implicits' key={key}>
+                    <Checkbox
+                      defaultChecked={true}
+                      checked={selectedImplicits[id]?.[key] || false}
+                      onCheckedChange={() => handleImplicitCheckboxChange(id, key)}
+                    />
+                    <label htmlFor="implicits">{implicit}</label>
+                  </div>
+                ))}
+              </td>
+                <td className="px-4 py-2">
+                {item.explicits && Object.entries(item.explicits).map(([key, explicit]) => (
+                  <div id='explicits' key={key}>
+                    <Checkbox
+                      defaultChecked={true}
+                      checked={selectedExplicits[id]?.[key] || false}
+                      onCheckedChange={() => handleExplicitCheckboxChange(id, key)}
+                    />
+                    <label htmlFor="explicits">{explicit}</label>
+                  </div>
+                ))}
+              </td>
                 <td className="px-4 py-2">{itemPrices[id] ? itemPrices[id].chaosValue : 'N/A'}</td>
               </tr>
             ))}
