@@ -5,6 +5,7 @@ import pobInit from '../api/pobparse';
 import { PathOfBuilding, Item } from '@/types/types';
 import { fetchItemPrice } from '@/api/pricing';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
 
 
 export default function Home() {
@@ -176,10 +177,10 @@ export default function Home() {
 
   
   return (
-    <main className="flex flex-1 flex-col p-4 md:p-6">
-      <button className='my-10' onClick={handleRefetch}>Refetch</button>
-      <button onClick={fetchPrices}>Fetch Prices</button>
-      <div className="overflow-x-auto mr-[10%]">
+    <main className="flex flex-1 flex-col p-4 md:p-6 mx-[10%]" >
+      <Button className='my-10' onClick={handleRefetch}>Refetch</Button>
+      <Button onClick={fetchPrices}>Fetch Prices</Button>
+      <div className="overflow-x-auto ">
         <table className="min-w-full bg-white dark:bg-gray-800 ">
           <thead>
             <tr>
@@ -192,10 +193,18 @@ export default function Home() {
               <th className="px-4 py-2">Price (Chaos)</th>
             </tr>
           </thead>
+
           <tbody>
             {Object.entries(items.ParsedItems).map(([id, item]: [string, Item]) => (
-              <tr key={id} className="border-t dark:border-gray-700">
-                <td className="px-4 py-2">{item['@id']}
+              <tr key={id} className={`border-t dark:border-gray-700 
+              ${item.Rarity === 'UNIQUE' ? 'bg-amber-950 text-orange-500' : ''}
+              ${item.Rarity === 'RARE' ? 'bg-yellow-700 text-yellow-200' : ''}
+              ${item.Rarity === 'MAGIC' ? 'bg-blue-950 text-blue-200' : ''}
+              
+              `}>
+                
+                
+                <td className="px-4 py-2 ">{item['@id']}
                 {/* <Image src={itemPrices[id]?itemPrices[id].icon:''} alt={item.name?item.name:''} width={40} height={40} /> */}
                 </td>
                 <td className="px-4 py-2">{item.Rarity}</td>
@@ -217,11 +226,12 @@ export default function Home() {
                 {item.explicits && Object.entries(item.explicits).map(([key, explicit]) => (
                   <div id='explicits' key={key}>
                     <Checkbox
+                      className='bg-white'
                       defaultChecked={true}
                       checked={selectedExplicits[id]?.[key] || false}
                       onCheckedChange={() => handleExplicitCheckboxChange(id, key)}
                     />
-                    <label htmlFor="explicits">{explicit}</label>
+                    <label htmlFor="explicits" className='pl-2'>{explicit}</label>
                   </div>
                 ))}
               </td>

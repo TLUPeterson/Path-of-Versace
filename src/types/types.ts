@@ -6,6 +6,7 @@ export interface Gear {
 
 // types/item.d.ts
 export interface Item {
+    category: string;
     stats: string[];
     stats2: { [key: string]: string };
     implicits: string[];

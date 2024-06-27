@@ -46,6 +46,7 @@ function refine(pob: PathOfBuilding): void {
   pob.Gears = initItems();
   refineItemSet(pob)
   refineItems(pob)
+  addCategories(pob)
 }
 
 function refineSkills(pob: PathOfBuilding): void {
@@ -57,13 +58,14 @@ function refineSkills(pob: PathOfBuilding): void {
 
 function refineItemSet(pob: PathOfBuilding): void {
   let itemSets = pob.Items.ItemSet[0].Slot;
-  itemSets.forEach((itemSet: Slot) => {
+  itemSets.forEach((item: Slot) => {
 
-    if (itemSet['@itemId'] === '0') {
+    if (item['@itemId'] === '0') {
       return;
     }
-    const currrentItem = itemSet['@name'].replace(/\s+/g, '');
-    pob.Gears[currrentItem].itemId = itemSet['@itemId'];
+    const currrentItem = item['@name'].replace(/\s+/g, '');
+    pob.Gears[currrentItem].itemId = item['@itemId'];
+
   });
 }
 
@@ -84,6 +86,34 @@ function refineItems(pob: PathOfBuilding): void {
   pob.ParsedItems = itemids;
 }
 
+function addCategories(pob: PathOfBuilding): void {
+  let itemSets = pob.Items.ItemSet[0].Slot;
+  itemSets.forEach((item: Slot) => {
+
+    if (!pob.ParsedItems){
+      return
+    }
+    const matchedItem = pob.ParsedItems[item['@itemId']];
+
+    if (matchedItem) {
+      matchedItem.category = item['@name']
+    }
+
+  });
+
+  let itemSets2 = pob.Items.ItemSet[1].SocketIdURL;
+  Object.entries(itemSets2).forEach(([key, item]) => {
+
+    if (!pob.ParsedItems){
+      return
+    }
+    pob.ParsedItems[key] = {
+      ...pob.ParsedItems[key],
+      category: 'Jewel'
+    };
+
+  });
+}
 
 
 function parseTooltip(text: string): Item {
@@ -94,6 +124,7 @@ function parseTooltip(text: string): Item {
     stats2: {},
     implicits: [],
     explicits: [],
+    category: ""
   };
 
   let line = lines.shift();
