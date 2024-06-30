@@ -14,7 +14,7 @@ import {
 import Image from 'next/image';
 import React, { useEffect, useState } from "react";
 import { Item, PathOfBuilding } from '@/types/types';
-import { fetchItemPrice } from "@/api/pricing";
+import { fetchItemPrice, fetchItemPriceFromTrade } from "@/api/pricing";
 import pobInit from "@/api/pobparse";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -31,11 +31,11 @@ export default function BuilderPage() {
     console.log(items);
   }, [items]);
 
+  // POB data
   useEffect(() => {
     const fetchData = async () => {
       console.log("Fetching data");
       let result = await pobInit();
-      console.log(result);
       if (result === null) {
         console.log("NA");
       } else {
@@ -46,6 +46,7 @@ export default function BuilderPage() {
     fetchData();
   }, []);
 
+  // Static trade data containing items and their categories
   useEffect(() => {
     const fetchTradeData = async () => {
       console.log('Fetching trade data');
@@ -64,8 +65,8 @@ export default function BuilderPage() {
     fetchTradeData();
   }, []);
 
+  // Get category item data prices from poe.ninja
   const fetchCategoryData = async () => {
-    console.log('Fetching category data');
     const itemTypes = ['UniqueArmour', 'UniqueWeapon', 'UniqueAccessory', 'UniqueFlask', 'UniqueJewel'];
 
     const fetchedData: { [key: string]: any } = {};
@@ -86,6 +87,7 @@ export default function BuilderPage() {
     fetchCategoryData();
   }
 
+  // Fetch item prices from poe.ninja
   const fetchPrices = async () => {
     if (!items || !items.ParsedItems || !tradeData) return;
 
@@ -109,6 +111,11 @@ export default function BuilderPage() {
 
             const itemPriceData = categoryData[itemType]?.lines.find((entry: any) => entry.name === item.name);
             prices[id] = itemPriceData || { chaosValue: 'N/A' };
+          }
+        }else if (item.Rarity === 'RARE') {
+          if (item["#text"].includes('Sol Solace')) {
+            console.log('Rune Noose');
+            fetchItemPriceFromTrade(item)
           }
         }
       })

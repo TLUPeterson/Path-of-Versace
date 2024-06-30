@@ -77,6 +77,29 @@ app.get('/statictradedata', async (req, res) => {
   }
 });
 
+app.get('/poeprice', async (req, res) => {
+  const { query } = req.query
+  console.log(query)
+  try {
+    const response = await fetch(`www.poeprices.info/api?${query}`, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Network response was not ok ' + response.statusText);
+    }
+
+    const data = await response.text();
+    res.send(data);
+  } catch (error) {
+    console.error('Error fetching static trade data:', error); // Log the error details
+    res.status(500).send(error.toString());
+  }
+});
+
+
 app.listen(PORT, () => {
   console.log(`Proxy server running on http://localhost:${PORT}`);
 });

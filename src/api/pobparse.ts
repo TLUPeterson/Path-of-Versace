@@ -34,7 +34,6 @@ function initItems()
 
 //dont need it later
 function refine(pob: PathOfBuilding): void {
-
   delete pob.Build
   delete pob.Import
   delete pob.Party
@@ -77,6 +76,8 @@ function refineItems(pob: PathOfBuilding): void {
   items.forEach((val) => {
     if (val['#text']) {
       let tooltip = parseTooltip(val['#text']);
+
+      parseForPriceinfo(val['#text']);
       Object.assign(val, tooltip);
     }
     if (val['@id']) {
@@ -85,6 +86,33 @@ function refineItems(pob: PathOfBuilding): void {
   });
   pob.ParsedItems = itemids;
 }
+
+function parseForPriceinfo(text: string): string {
+  const lines = text.split('\n');
+  const processedLines = lines.map(line => line.replace(/\{(crafted|fractured)\}/g, '').trim());
+
+  processedLines[0] = 'Item Class:'
+  processedLines[1] = capitalizeFirstLetter(processedLines[1])
+
+  // dont need unique actually
+  switch (processedLines[1]){
+      case 'Rarity: Rare':
+      case 'Rarity: Unique':
+          processedLines.splice(4, 0, '--------');
+          break;
+      case 'Rarity: Magic':
+      case 'Rarity: Normal':
+          processedLines.splice(3, 0, '--------');
+          break;
+  }
+  //add dashes after implcits line
+
+  console.log(processedLines)
+  
+  return text
+}
+
+
 
 function addCategories(pob: PathOfBuilding): void {
   let itemSets = pob.Items.ItemSet[0].Slot;
@@ -102,7 +130,7 @@ function addCategories(pob: PathOfBuilding): void {
   });
 
   let itemSets2 = pob.Items.ItemSet[1].SocketIdURL;
-  Object.entries(itemSets2).forEach(([key, item]) => {
+  Object.entries(itemSets2).forEach(([key=1, item]) => {
 
     if (!pob.ParsedItems){
       return
@@ -133,7 +161,6 @@ function parseTooltip(text: string): Item {
   const rarity = line.split(': ');
   const key = rarity[0] as keyof Item;
   if (rarity.length === 2 && key) {
-    // Ensure type compatibility
     switch (key) {
       case 'stats':
       case 'implicits':
@@ -148,7 +175,6 @@ function parseTooltip(text: string): Item {
         item[key] = rarity[1] as any;
     }
   }
-  item.bg_color = 'bg_' + item.Rarity;
 
   switch (item.Rarity) {
     case 'NORMAL':
@@ -231,6 +257,10 @@ function parseTooltip(text: string): Item {
 
   return item;
 }
+// For poeprices
+  function capitalizeFirstLetter(word: string): string {
+    return word.replace(/\w+/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase());
+  }
 
 function isSelectedVariant(variant: string[], item: Item): boolean {
   if (
@@ -299,7 +329,6 @@ function pobParse(raw: string): PathOfBuilding  {
   const jsonRaw = xml2json(xml, '');
   const json = JSON.parse(jsonRaw);
   const pob = json.PathOfBuilding;
-  console.log(pob);
   refine(pob)
   return pob;
 }
@@ -318,7 +347,7 @@ export default async function pobInit(): Promise<PathOfBuilding | null> {
     const raw = await response.text();
     return pobParse(raw);
   } catch (error) {
-    console.error('There has been a problem with your fetch operation:', error);
+    console.error('There has be  a problem with your fetch operation:', error);
     return null
   }
 }
