@@ -19,14 +19,13 @@ export const fetchItemPrice = async (itemType: string, league: string) => {
 export const fetchItemPriceFromTrade = async (item: Item) => {
   // Encode itemText as base64
   const itemText = item["#text"] as string;
-  console.log(itemText, transformItemText(itemText));
-  const query = querystring({
+  const iteminfo = querystring({
     l: 'Necropolis',
     i: utf8ToBase64(transformItemText(itemText)),
   });
-  console.log(query);
+  console.log(iteminfo);
 
-  const response = await fetch(`http://localhost:3001/poeprice?query=${query}`);
+  const response = await fetch(`http://localhost:3001/poeprice?iteminfo=${encodeURIComponent(iteminfo)}`);
   if (!response.ok) {
     throw new Error('Network response was not ok ' + response.statusText);
   }

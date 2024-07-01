@@ -115,7 +115,10 @@ export default function BuilderPage() {
         }else if (item.Rarity === 'RARE') {
           if (item["#text"].includes('Sol Solace')) {
             console.log('Rune Noose');
-            fetchItemPriceFromTrade(item)
+            const itemPriceFromPoeprice = await fetchItemPriceFromTrade(item);
+            // make all prices to be in uniform (chaos value)
+            console.log(itemPriceFromPoeprice);
+
           }
         }
       })

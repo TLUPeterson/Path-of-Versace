@@ -78,10 +78,10 @@ app.get('/statictradedata', async (req, res) => {
 });
 
 app.get('/poeprice', async (req, res) => {
-  const { query } = req.query
-  console.log(query)
+  const { iteminfo } = req.query
+  const decodedIteminfo = decodeURIComponent(iteminfo);
   try {
-    const response = await fetch(`www.poeprices.info/api?${query}`, {
+    const response = await fetch(`https://poeprices.info/api?${decodedIteminfo}`, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
       }
