@@ -77,7 +77,7 @@ function refineItems(pob: PathOfBuilding): void {
     if (val['#text']) {
       let tooltip = parseTooltip(val['#text']);
 
-      parseForPriceinfo(val['#text']);
+      val['#text'] = parseForPriceinfo(val['#text']);
       Object.assign(val, tooltip);
     }
     if (val['@id']) {
@@ -94,7 +94,6 @@ function parseForPriceinfo(text: string): string {
   processedLines[0] = 'Item Class:'
   processedLines[1] = capitalizeFirstLetter(processedLines[1])
 
-  // dont need unique actually
   switch (processedLines[1]){
       case 'Rarity: Rare':
       case 'Rarity: Unique':
@@ -105,11 +104,12 @@ function parseForPriceinfo(text: string): string {
           processedLines.splice(3, 0, '--------');
           break;
   }
-  //add dashes after implcits line
 
-  console.log(processedLines)
-  
-  return text
+  const uniqueIdIndex = processedLines.findIndex(line => line.includes("Implicits:"));
+  if (uniqueIdIndex !== -1) {
+      processedLines.splice(uniqueIdIndex+1, 0, '--------');
+  }  
+  return processedLines.join('\n');
 }
 
 
@@ -129,7 +129,7 @@ function addCategories(pob: PathOfBuilding): void {
 
   });
 
-  let itemSets2 = pob.Items.ItemSet[1].SocketIdURL;
+  let itemSets2 = pob.Items.ItemSet[0].SocketIdURL;
   Object.entries(itemSets2).forEach(([key=1, item]) => {
 
     if (!pob.ParsedItems){
