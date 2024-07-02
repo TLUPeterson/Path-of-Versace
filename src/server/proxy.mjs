@@ -99,6 +99,20 @@ app.get('/poeprice', async (req, res) => {
   }
 });
 
+app.get('/currency', async (req, res) => {
+  try {
+    const response = await fetch(`https://poe.ninja/api/data/currencyoverview?league=Necropolis&type=Currency`);
+    if (!response.ok) {
+      throw new Error('Network response was not ok ' + response.statusText);
+    }
+    const data = await response.json();
+    res.send(data);
+  } catch (error) {
+    console.error('Error fetching currency data:', error); // Log the error details
+    res.status(500).send(error.toString());
+  }
+});
+
 
 app.listen(PORT, () => {
   console.log(`Proxy server running on http://localhost:${PORT}`);

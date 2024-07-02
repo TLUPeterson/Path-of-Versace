@@ -9,6 +9,6 @@ Get items from pobb
         
       If rare -> 
         Initally with all affixes?
-        //OR dont price rares, until user chooses the important affixes
+          This is through poeprices info
 
       Gems -> poeninja

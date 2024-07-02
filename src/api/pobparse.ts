@@ -89,7 +89,7 @@ function refineItems(pob: PathOfBuilding): void {
 
 function parseForPriceinfo(text: string): string {
   const lines = text.split('\n');
-  const processedLines = lines.map(line => line.replace(/\{(crafted|fractured)\}/g, '').trim());
+  const processedLines = lines.map(line => line.replace(/\{(crafted|fractured|corrupted)\}/g, '').trim());
 
   processedLines[0] = 'Item Class:'
   processedLines[1] = capitalizeFirstLetter(processedLines[1])
@@ -130,13 +130,14 @@ function addCategories(pob: PathOfBuilding): void {
   });
 
   let itemSets2 = pob.Items.ItemSet[0].SocketIdURL;
-  Object.entries(itemSets2).forEach(([key=1, item]) => {
+  Object.entries(itemSets2).forEach(([key, item], index) => {
 
     if (!pob.ParsedItems){
       return
     }
-    pob.ParsedItems[key] = {
-      ...pob.ParsedItems[key],
+
+    pob.ParsedItems[index+1] = {
+      ...pob.ParsedItems[index+1],
       category: 'Jewel'
     };
 

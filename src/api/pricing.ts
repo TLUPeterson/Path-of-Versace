@@ -23,7 +23,7 @@ export const fetchItemPriceFromTrade = async (item: Item) => {
     l: 'Necropolis',
     i: utf8ToBase64(transformItemText(itemText)),
   });
-  console.log(iteminfo);
+  //console.log(iteminfo);
 
   const response = await fetch(`http://localhost:3001/poeprice?iteminfo=${encodeURIComponent(iteminfo)}`);
   if (!response.ok) {

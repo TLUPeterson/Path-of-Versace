@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Image from 'next/image';
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Item, PathOfBuilding } from '@/types/types';
 import { fetchItemPrice, fetchItemPriceFromTrade } from "@/api/pricing";
 import pobInit from "@/api/pobparse";
@@ -21,6 +21,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 export default function BuilderPage() {
   const [items, setItems] = useState<PathOfBuilding | null>(null);
+  const [currencyPrice, setCurrencyPrice] = useState<any | null>(null);
+  const [divineValue, setDivineValue] = useState<number | null>(100);
   const [tradeData, setTradeData] = useState<any | null>(null);
   const [categoryData, setCategoryData] = useState<{ [key: string]: any }>({});
   const [itemPrices, setItemPrices] = useState<{ [key: string]: any }>({});
@@ -30,6 +32,31 @@ export default function BuilderPage() {
   useEffect(() => {
     console.log(items);
   }, [items]);
+
+  useEffect(() => {
+    const fetchCurrencyData = async () => {
+      console.log('Fetching currency data');
+      try {
+        const response = await fetch('http://localhost:3001/currency');
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const data = await response.json();
+        setCurrencyPrice(data);
+        console.log(data.lines);
+
+        for (const item of data.lines) {
+          if(item.currencyTypeName === 'Divine Orb'){
+            setDivineValue(item.receive.value)
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching currency data:', error);
+      }
+    };
+
+    fetchCurrencyData();
+  }, []);
 
   // POB data
   useEffect(() => {
@@ -64,6 +91,7 @@ export default function BuilderPage() {
 
     fetchTradeData();
   }, []);
+
 
   // Get category item data prices from poe.ninja
   const fetchCategoryData = async () => {
@@ -112,18 +140,23 @@ export default function BuilderPage() {
             const itemPriceData = categoryData[itemType]?.lines.find((entry: any) => entry.name === item.name);
             prices[id] = itemPriceData || { chaosValue: 'N/A' };
           }
-        }else if (item.Rarity === 'RARE') {
-          if (item["#text"].includes('Sol Solace')) {
-            console.log('Rune Noose');
+        }else if (item.Rarity === 'RARE' || item.Rarity === 'MAGIC') {
+          if (item["#text"]) {
             const itemPriceFromPoeprice = await fetchItemPriceFromTrade(item);
+            prices[id] = {}
             // make all prices to be in uniform (chaos value)
-            console.log(itemPriceFromPoeprice);
+            if (itemPriceFromPoeprice.currency === 'divine'){
+              prices[id].chaosValue = Math.round(itemPriceFromPoeprice.min*divineValue*100)/100 || 'NA';
+            }else{
+              prices[id].chaosValue = Math.round(itemPriceFromPoeprice.min*100)/100 || 'NA';
+            }
+            //console.log(prices[id]);
 
           }
         }
       })
     );
-
+    console.log(prices);
     setItemPrices(prices);
   };
 
@@ -194,14 +227,17 @@ export default function BuilderPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const totalChaosValue = useMemo(() => {
+    return Object.values(itemPrices).reduce((total, item) => {
+      const value = typeof item.chaosValue === 'number' ? item.chaosValue : 0;
+      return total + value;
+    }, 0);
+  }, [itemPrices]);
+
   if (!items || !items.ParsedItems) return <div>Loading...</div>;
 
-  /*const totalPrice = React.useMemo(() => {
-    return categories.reduce((total, category) => {
-      return total + (items[category].price || 0);
-    }, 0);
-  }, [items]);
-*/
+
+
   
   return (
 <div className="p-4 mx-[15%]">
@@ -212,6 +248,9 @@ export default function BuilderPage() {
           Add
         </Button>
       </div>
+      <div>{divineValue}</div>
+      <div>{totalChaosValue}</div>
+      <div>{totalChaosValue/divineValue}</div>
       <div>
         <Button className='my-10' onClick={handleRefetch}>Refetch</Button>
         <Button onClick={fetchPrices}>Fetch Prices</Button>
