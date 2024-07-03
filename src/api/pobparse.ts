@@ -42,7 +42,7 @@ function refine(pob: PathOfBuilding): void {
   delete pob.Calcs
   delete pob.TreeView
   delete pob.Config
-  pob.Gears = initItems();
+  //pob.Gears = initItems();
   refineItemSet(pob)
   refineItems(pob)
   addCategories(pob)
@@ -56,14 +56,13 @@ function refineSkills(pob: PathOfBuilding): void {
 
 
 function refineItemSet(pob: PathOfBuilding): void {
-  let itemSets = pob.Items.ItemSet[0].Slot;
+  let itemSets = Array.isArray(pob.Items.ItemSet) ? pob.Items.ItemSet[0].Slot : pob.Items.ItemSet.Slot;
   itemSets.forEach((item: Slot) => {
-
     if (item['@itemId'] === '0') {
       return;
     }
     const currrentItem = item['@name'].replace(/\s+/g, '');
-    pob.Gears[currrentItem].itemId = item['@itemId'];
+    //pob.Gears[currrentItem].itemId = item['@itemId'];
 
   });
 }
@@ -115,7 +114,7 @@ function parseForPriceinfo(text: string): string {
 
 
 function addCategories(pob: PathOfBuilding): void {
-  let itemSets = pob.Items.ItemSet[0].Slot;
+  let itemSets = Array.isArray(pob.Items.ItemSet) ? pob.Items.ItemSet[0].Slot : pob.Items.ItemSet.Slot;
   itemSets.forEach((item: Slot) => {
 
     if (!pob.ParsedItems){
@@ -129,7 +128,7 @@ function addCategories(pob: PathOfBuilding): void {
 
   });
 
-  let itemSets2 = pob.Items.ItemSet[0].SocketIdURL;
+  let itemSets2 = Array.isArray(pob.Items.ItemSet) ? pob.Items.ItemSet[0].SocketIdURL : pob.Items.ItemSet.SocketIdURL;
   Object.entries(itemSets2).forEach(([key, item], index) => {
 
     if (!pob.ParsedItems){
@@ -330,12 +329,13 @@ function pobParse(raw: string): PathOfBuilding  {
   const jsonRaw = xml2json(xml, '');
   const json = JSON.parse(jsonRaw);
   const pob = json.PathOfBuilding;
+  console.log(pob);
   refine(pob)
   return pob;
 }
 
-export default async function pobInit(): Promise<PathOfBuilding | null> {
-  const url = 'http://localhost:3001/pobdata';
+export default async function pobInit(pobbLink: string): Promise<PathOfBuilding | null> {
+  const url = `http://localhost:3001/pobdata?pobb=${pobbLink}`;
   console.log(url);
   try {
     const response = await fetch(url, {

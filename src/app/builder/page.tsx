@@ -20,6 +20,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 
 export default function BuilderPage() {
+  const [pobbLink, setpobbLink] = useState('');
   const [items, setItems] = useState<PathOfBuilding | null>(null);
   const [currencyPrice, setCurrencyPrice] = useState<any | null>(null);
   const [divineValue, setDivineValue] = useState<number | null>(100);
@@ -59,19 +60,22 @@ export default function BuilderPage() {
   }, []);
 
   // POB data
-  useEffect(() => {
-    const fetchData = async () => {
-      console.log("Fetching data");
-      let result = await pobInit();
-      if (result === null) {
-        console.log("NA");
-      } else {
-        setItems(result);
-      }
-    };
-
-    fetchData();
-  }, []);
+  const fetchData = async () => {
+    const pobbCode = pobbLink.trim().match(/(?:https:\/\/)?(?:pobb\.in\/)?([a-zA-Z0-9-]+)/)?.[1];
+    if (!pobbCode) {
+      console.log("Invalid pobb.in link or code");
+      return;
+    }
+    let result = await pobInit(pobbCode);
+    if (result === null) {
+      console.log("NA");
+    } else {
+      setItemPrices({});
+      setCategoryData({});
+      fetchCategoryData();
+      setItems(result);
+    }
+  };
 
   // Static trade data containing items and their categories
   useEffect(() => {
@@ -111,6 +115,7 @@ export default function BuilderPage() {
   };
 
   function handleRefetch() {
+    setItemPrices({});
     setCategoryData({});
     fetchCategoryData();
   }
@@ -124,7 +129,9 @@ export default function BuilderPage() {
     await Promise.all(
       Object.entries(items.ParsedItems).map(async ([id, item]: [string, Item]) => {
         //console.log(item, item.explicits, typeof item.explicits);
+        console.log('item price loop', id);
         if (item.Rarity === 'UNIQUE') {
+          console.log('unique item', item);
           let category = null;
 
           for (const cat of tradeData) {
@@ -222,10 +229,6 @@ export default function BuilderPage() {
     }));
   };
 
-  useEffect(() => {
-    fetchCategoryData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const totalChaosValue = useMemo(() => {
     return Object.values(itemPrices).reduce((total, item) => {
@@ -233,26 +236,25 @@ export default function BuilderPage() {
       return total + value;
     }, 0);
   }, [itemPrices]);
-
-  if (!items || !items.ParsedItems) return <div>Loading...</div>;
-
-
-
   
   return (
 <div className="p-4 mx-[15%]">
       <div className="mb-8 mr-[70%] flex">
-        <Input className="mr-4" placeholder="pobb.in link">
-        </Input>
-        <Button>
+      <Input
+        className="mr-4"
+        placeholder="pobb.in link"
+        value={pobbLink}
+        onChange={(e) => setpobbLink(e.target.value)}
+      />
+        <Button onClick={fetchData}>
           Add
         </Button>
       </div>
-      <div>{divineValue}</div>
-      <div>{totalChaosValue}</div>
-      <div>{totalChaosValue/divineValue}</div>
+      <div>Div price: {divineValue}</div>
+      <div>Total Chaos: {totalChaosValue}</div>
+      <div>Total Div: {totalChaosValue/divineValue}</div>
       <div>
-        <Button className='my-10' onClick={handleRefetch}>Refetch</Button>
+        <Button className='my-10 mr-4' onClick={handleRefetch}>Refetch</Button>
         <Button onClick={fetchPrices}>Fetch Prices</Button>
       </div>
 
@@ -270,7 +272,7 @@ export default function BuilderPage() {
             <TableHead className="text-right text-customblack">State</TableHead>
           </TableRow>
         </TableHeader>
-
+        {items && items.ParsedItems && (
         <TableBody>
             {Object.entries(items.ParsedItems).map(([id, item]: [string, Item]) => (
               <TableRow key={id} className={`border-t dark:border-gray-700 hover:bg-gray-700  
@@ -316,6 +318,7 @@ export default function BuilderPage() {
               </TableRow>
             ))}
           </TableBody>
+        )}
       </Table>
     </div>
   );

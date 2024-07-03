@@ -4,8 +4,6 @@ import fetch from 'node-fetch';
 const app = express();
 
 const PORT = 3001; // Port for the proxy server
-const PASTE_KEY = '5BE7sPHKkLxP';
-const POB_URL = `https://poedb.tw/pob/${PASTE_KEY}/raw`;
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
@@ -15,9 +13,10 @@ app.use((req, res, next) => {
 });
 
 app.get('/pobdata', async (req, res) => {
+  const { pobb } = req.query
   try {
-    const response = await fetch(POB_URL);
-    console.log(POB_URL)
+    const response = await fetch(`https://pobb.in/${pobb}/raw`);
+    console.log(pobb)
     if (!response.ok) {
       throw new Error('Network response was not ok ' + response.statusText);
     }
