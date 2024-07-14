@@ -2,18 +2,34 @@
   "version": 2,
   "builds": [
     {
-      "src": "next.config.mjs",
+      "src": "package.json",
       "use": "@vercel/next"
     },
     {
-      "src": "src/server/proxy.mjs",
+      "src": "/api/pobdata",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "/api/pricing",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "/api/statictradedata",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "/api/poeprice",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "/api/currency",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/src/server/proxy.mjs"
+      "dest": "/api/$1"
     },
     {
       "src": "/(.*)",
