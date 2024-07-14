@@ -172,7 +172,7 @@ function parseTooltip(text: string): Item {
         item[key] = JSON.parse(rarity[1]) as any;
         break;
       default:
-        item[key] = rarity[1] as any;
+        (item as any)[key] = rarity[1];
     }
   }
 

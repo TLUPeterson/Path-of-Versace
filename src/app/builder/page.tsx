@@ -129,9 +129,9 @@ export default function BuilderPage() {
     await Promise.all(
       Object.entries(items.ParsedItems).map(async ([id, item]: [string, Item]) => {
         //console.log(item, item.explicits, typeof item.explicits);
-        console.log('item price loop', id);
+        //console.log('item price loop', id);
         if (item.Rarity === 'UNIQUE') {
-          console.log('unique item', item);
+          //console.log('unique item', item);
           let category = null;
 
           for (const cat of tradeData) {
@@ -153,7 +153,8 @@ export default function BuilderPage() {
             prices[id] = {}
             // make all prices to be in uniform (chaos value)
             if (itemPriceFromPoeprice.currency === 'divine'){
-              prices[id].chaosValue = Math.round(itemPriceFromPoeprice.min*divineValue*100)/100 || 'NA';
+              const divine = divineValue ?? 100;
+              prices[id].chaosValue = Math.round(itemPriceFromPoeprice.min*divine*100)/100 || 'NA';
             }else{
               prices[id].chaosValue = Math.round(itemPriceFromPoeprice.min*100)/100 || 'NA';
             }
@@ -238,88 +239,94 @@ export default function BuilderPage() {
   }, [itemPrices]);
   
   return (
-<div className="p-4 mx-[15%]">
-      <div className="mb-8 mr-[70%] flex">
-      <Input
-        className="mr-4"
-        placeholder="pobb.in link"
-        value={pobbLink}
-        onChange={(e) => setpobbLink(e.target.value)}
-      />
-        <Button onClick={fetchData}>
+    <div className="container mx-auto p-8 bg-gray-100 dark:bg-gray-900">
+      <div className="mb-8 flex flex-wrap items-center">
+        <div className="flex-grow max-w-md mr-2 mb-2 sm:mb-0">
+          <Input
+            className="w-full"
+            placeholder="pobb.in link"
+            value={pobbLink}
+            onChange={(e) => setpobbLink(e.target.value)}
+          />
+        </div>
+        <Button onClick={fetchData} className="flex-shrink-0">
           Add
         </Button>
       </div>
-      <div>Div price: {divineValue}</div>
-      <div>Total Chaos: {totalChaosValue}</div>
-      <div>Total Div: {totalChaosValue/divineValue}</div>
-      <div>
-        <Button className='my-10 mr-4' onClick={handleRefetch}>Refetch</Button>
+  
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 text-lg">
+        <div className="p-4 bg-white dark:bg-gray-800 rounded shadow">Div price: {divineValue}</div>
+        <div className="p-4 bg-white dark:bg-gray-800 rounded shadow">Total Chaos: {totalChaosValue}</div>
+        <div className="p-4 bg-white dark:bg-gray-800 rounded shadow">Total Div: {totalChaosValue/(divineValue ?? 100)}</div>
+      </div>
+  
+      <div className="flex flex-col sm:flex-row justify-start mb-8">
+        <Button className='mb-4 sm:mb-0 sm:mr-4' onClick={handleRefetch}>Refetch</Button>
         <Button onClick={fetchPrices}>Fetch Prices</Button>
       </div>
 
-      <Table className="w-full">
-        <TableCaption>Path of Exile Item Tracker</TableCaption>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[100px] text-customblack">Category</TableHead>
-            <TableHead className="text-customblack">Rarity</TableHead>
-            <TableHead className="text-customblack">Item Name</TableHead>
-            <TableHead className="text-customblack">Type Line</TableHead>
-            <TableHead className="text-customblack">Imp</TableHead>
-            <TableHead className="text-customblack">Exp</TableHead>
-            <TableHead className="text-customblack">Price</TableHead>
-            <TableHead className="text-right text-customblack">State</TableHead>
-          </TableRow>
-        </TableHeader>
-        {items && items.ParsedItems && (
-        <TableBody>
-            {Object.entries(items.ParsedItems).map(([id, item]: [string, Item]) => (
-              <TableRow key={id} className={`border-t dark:border-gray-700 hover:bg-gray-700  
-              ${item.Rarity === 'UNIQUE' ? 'bg-amber-950 text-orange-500' : ''}
-              ${item.Rarity === 'RARE' ? 'bg-yellow-700 text-yellow-200' : ''}
-              ${item.Rarity === 'MAGIC' ? 'bg-blue-950 text-blue-200' : ''}
-              
-              `}>
-                
-                
-                <TableCell className="px-4 py-2 ">{item.category}
-                {/* <Image src={itemPrices[id]?itemPrices[id].icon:''} alt={item.name?item.name:''} width={40} height={40} /> */}
-                </TableCell>
-                <TableCell className="px-4 py-2">{item.Rarity}</TableCell>
-                <TableCell className="px-4 py-2">{item.name}</TableCell>
-                <TableCell className="px-4 py-2">{item.typeLine}</TableCell>
-                <TableCell className="px-4 py-2">
-                {item.implicits && Object.entries(item.implicits).map(([key, implicit]) => (
-                  <div id='implicits' key={key}>
-                    <Checkbox
-                      defaultChecked={true}
-                      checked={selectedImplicits[id]?.[key] || false}
-                      onCheckedChange={() => handleImplicitCheckboxChange(id, key)}
-                    />
-                    <label htmlFor="implicits">{implicit}</label>
-                  </div>
-                ))}
-              </TableCell>
-                <TableCell className="px-4 py-2">
-                {item.explicits && Object.entries(item.explicits).map(([key, explicit]) => (
-                  <div id='explicits' key={key}>
-                    <Checkbox
-                      className='bg-white'
-                      defaultChecked={true}
-                      checked={selectedExplicits[id]?.[key] || false}
-                      onCheckedChange={() => handleExplicitCheckboxChange(id, key)}
-                    />
-                    <label htmlFor="explicits" className='pl-2'>{explicit}</label>
-                  </div>
-                ))}
-              </TableCell>
-                <TableCell className="px-4 py-2">{itemPrices[id] ? itemPrices[id].chaosValue : 'N/A'}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        )}
-      </Table>
+      <div className="overflow-x-auto">
+        <Table className="w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg">
+          <TableCaption className="text-lg mb-4">Path of Exile Item Tracker</TableCaption>
+          <TableHeader>
+            <TableRow className="bg-gray-200 dark:bg-gray-700">
+              <TableHead className="w-[100px] text-gray-700 dark:text-gray-300">Category</TableHead>
+              <TableHead className="text-gray-700 dark:text-gray-300">Rarity</TableHead>
+              <TableHead className="text-gray-700 dark:text-gray-300">Item Name</TableHead>
+              <TableHead className="text-gray-700 dark:text-gray-300">Type Line</TableHead>
+              <TableHead className="text-gray-700 dark:text-gray-300">Imp</TableHead>
+              <TableHead className="text-gray-700 dark:text-gray-300">Exp</TableHead>
+              <TableHead className="text-gray-700 dark:text-gray-300">Price</TableHead>
+              <TableHead className="text-right text-gray-700 dark:text-gray-300">State</TableHead>
+            </TableRow>
+          </TableHeader>
+          {items && items.ParsedItems && (
+            <TableBody>
+              {Object.entries(items.ParsedItems).map(([id, item]: [string, Item]) => (
+                <TableRow key={id} className={`
+                  border-b dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors
+                  ${item.Rarity === 'UNIQUE' ? 'bg-[#D4815E] dark:bg-amber-900 text-amber-900 dark:text-amber-100' : ''}
+                  ${item.Rarity === 'RARE' ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-900 dark:text-yellow-100' : ''}
+                  ${item.Rarity === 'MAGIC' ? 'bg-blue-100 dark:bg-blue-900 text-blue-900 dark:text-blue-100' : ''}
+                `}>
+                  <TableCell className="px-4 py-2 ">{item.category}
+                    {/* <Image src={itemPrices[id]?itemPrices[id].icon:''} alt={item.name?item.name:''} width={40} height={40} /> */}
+                    </TableCell>
+                    <TableCell className="px-4 py-2">{item.Rarity}</TableCell>
+                    <TableCell className="px-4 py-2">{item.name}</TableCell>
+                    <TableCell className="px-4 py-2">{item.typeLine}</TableCell>
+                    <TableCell className="px-4 py-2">
+                    {item.implicits && Object.entries(item.implicits).map(([key, implicit]) => (
+                      <div id='implicits' key={key}>
+                        <Checkbox
+                          defaultChecked={true}
+                          checked={selectedImplicits[id]?.[key] || false}
+                          onCheckedChange={() => handleImplicitCheckboxChange(id, key)}
+                        />
+                        <label htmlFor="implicits">{implicit}</label>
+                      </div>
+                    ))}
+                  </TableCell>
+                    <TableCell className="px-4 py-2">
+                    {item.explicits && Object.entries(item.explicits).map(([key, explicit]) => (
+                      <div id='explicits' key={key}>
+                        <Checkbox
+                          className='bg-white'
+                          defaultChecked={true}
+                          checked={selectedExplicits[id]?.[key] || false}
+                          onCheckedChange={() => handleExplicitCheckboxChange(id, key)}
+                        />
+                        <label htmlFor="explicits" className='pl-2'>{explicit}</label>
+                      </div>
+                    ))}
+                  </TableCell>
+                    <TableCell className="px-4 py-2">{itemPrices[id] ? itemPrices[id].chaosValue : 'N/A'}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          )}
+        </Table>
+      </div>
     </div>
   );
 }

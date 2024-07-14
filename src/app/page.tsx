@@ -14,7 +14,7 @@ export default function Home() {
   return (
     <main className="flex flex-1 flex-col p-4 md:p-6 mx-[10%]" >
       <div>
-      Shieeet
+      Home
       </div>
     </main>
   );
